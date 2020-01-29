@@ -11,3 +11,4 @@
 
 - tests (integration?)
 - configuration (verbose mode?, configurable root directory?)
+- debounce for the `go test` command?
