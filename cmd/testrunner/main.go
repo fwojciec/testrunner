@@ -29,7 +29,7 @@ func main() {
 			close(cancel)
 		})
 	}
-	fmt.Println(g.Run())
+	fmt.Fprintln(os.Stderr, g.Run())
 }
 
 func interrupt(cancel <-chan struct{}) error {
