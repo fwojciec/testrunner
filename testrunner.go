@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -27,7 +28,7 @@ func (a *WatchActor) Run() error {
 	for {
 		select {
 		case event := <-a.watcher.Events:
-			if event.Op == fsnotify.Write {
+			if event.Op == fsnotify.Write && filepath.Ext(strings.ToLower(event.Name)) == ".go" {
 				testArg := "./" + filepath.Dir(event.Name)
 				cmd := exec.Command("go", "test", "-race", testArg)
 				cmd.Stdout = a.stdout
