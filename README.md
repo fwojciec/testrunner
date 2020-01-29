@@ -6,8 +6,8 @@
 
 - automatically detects directory tree changes (added/deleted directories)
 - runs only on changes to `.go` files
-- super simple, no configuration
 
 ## TODO
 
 - tests (integration?)
+- configuration (verbose mode?, configurable root directory?)
