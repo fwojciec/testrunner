@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -39,6 +38,6 @@ func interrupt(cancel <-chan struct{}) error {
 	case sig := <-c:
 		return fmt.Errorf("received signal %s", sig)
 	case <-cancel:
-		return errors.New("canceled")
+		return fmt.Errorf("canceled")
 	}
 }
