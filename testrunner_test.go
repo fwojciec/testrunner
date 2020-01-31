@@ -33,31 +33,44 @@ func (r *mockRunner) Calls() []string {
 }
 
 var (
-	testDebounceDelay = 10 * time.Millisecond
-	testPollInterval  = 10 * time.Millisecond
+	testDebounceDelay = 1 * time.Millisecond
+	testPollInterval  = 1 * time.Millisecond
+	wait              = 100 * time.Millisecond
 )
 
-func TestRunsOnlyOnGoFileWrites(t *testing.T) {
+func TestRunsOnGoFileWrites(t *testing.T) {
 	t.Parallel()
 	th := setup()
 	defer th.TeardownFn()
-	_ = createAndWriteToFile(filepath.Join(th.TestDir, "file.go"))
-	_ = createAndWriteToFile(filepath.Join(th.TestDir, "file.txt"))
-	time.Sleep(30 * time.Millisecond)
+	_ = createAndWriteToFile("file.go", th.TestDir)
+	time.Sleep(wait)
 	equals(t, []string{th.TestDir}, th.Runner.Calls())
+}
+
+func TestSkipsNonGoFileWrites(t *testing.T) {
+	t.Parallel()
+	th := setup()
+	defer th.TeardownFn()
+	_ = createAndWriteToFile("file.tst", th.TestDir)
+	time.Sleep(wait)
+	equals(t, 0, len(th.Runner.Calls()))
 }
 
 func TestDiscoversWritesInNewSubdirectories(t *testing.T) {
 	t.Parallel()
 	th := setup()
 	defer th.TeardownFn()
-	subDir := "another"
-	_ = createAndWriteToFile(filepath.Join(th.TestDir, "file.go"))
-	_ = os.Mkdir(filepath.Join(th.TestDir, subDir), 0777)
-	time.Sleep(20 * time.Millisecond)
-	_ = createAndWriteToFile(filepath.Join(th.TestDir, subDir, "another.go"))
-	time.Sleep(30 * time.Millisecond)
-	equals(t, []string{th.TestDir, filepath.Join(th.TestDir, subDir)}, th.Runner.Calls())
+	_ = createAndWriteToFile("file.go", th.TestDir)
+	subDir := filepath.Join(th.TestDir, "another")
+	_ = os.Mkdir(subDir, 0777)
+	f, _ := os.Create(filepath.Join(subDir, "another.go"))
+	defer f.Close()
+	_ = f.Sync()
+	time.Sleep(wait)
+	f.Write([]byte("more stuff"))
+	f.Sync()
+	time.Sleep(wait)
+	equals(t, []string{th.TestDir, subDir}, th.Runner.Calls())
 }
 
 type testHelper struct {
@@ -78,7 +91,7 @@ func setup() *testHelper {
 	go db.Run()
 	a := testrunner.NewActor(testDir, testPollInterval)
 	go a.Run(db.Pathc)
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(wait)
 	return &testHelper{
 		TestDir: testDir,
 		TeardownFn: func() error {
@@ -92,8 +105,8 @@ func setup() *testHelper {
 	}
 }
 
-func createAndWriteToFile(fname string) error {
-	f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE, 0666)
+func createAndWriteToFile(fname, dir string) error {
+	f, err := os.OpenFile(filepath.Join(dir, fname), os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return err
 	}
