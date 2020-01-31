@@ -5,19 +5,39 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/fwojciec/testrunner"
 	"github.com/oklog/run"
 )
 
+var (
+	defaultPollInterval  = 10 * time.Second
+	defaultDebounceDelay = 500 * time.Millisecond
+	defaultRootDir       = "."
+)
+
 func main() {
+	tr := &testrunner.TestRunner{
+		Stderr: os.Stderr,
+		Stdout: os.Stdout,
+	}
+	db := testrunner.NewDebouncer(tr, defaultDebounceDelay)
+	a := testrunner.NewActor(defaultRootDir, defaultPollInterval)
+
 	var g run.Group
 	{
-		wa := testrunner.New(".")
 		g.Add(func() error {
-			return wa.Run()
+			return db.Run()
+		}, func(e error) {
+			db.Stop()
+		})
+	}
+	{
+		g.Add(func() error {
+			return a.Run(db.Pathc)
 		}, func(error) {
-			wa.Stop()
+			a.Stop()
 		})
 	}
 	{

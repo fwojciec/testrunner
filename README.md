@@ -6,9 +6,8 @@
 
 - automatically detects directory tree changes (added/deleted directories)
 - runs only on changes to `.go` files
+- debounces in case of quick writes in the same directory
 
 ## TODO
 
-- tests (integration?)
-- configuration (verbose mode?, configurable root directory?)
-- debounce for the `go test` command?
+- configuration (verbose mode?, configurable root directory?)\
