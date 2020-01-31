@@ -10,4 +10,4 @@
 
 ## TODO
 
-- configuration (verbose mode?, configurable root directory?)\
+- configuration (verbose mode?, configurable root directory?)
