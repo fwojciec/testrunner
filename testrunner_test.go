@@ -35,7 +35,7 @@ func (r *mockRunner) Calls() []string {
 var (
 	testDebounceDelay = 1 * time.Millisecond
 	testPollInterval  = 1 * time.Millisecond
-	wait              = 100 * time.Millisecond
+	wait              = 500 * time.Millisecond
 )
 
 func TestRunsOnGoFileWrites(t *testing.T) {
@@ -44,7 +44,7 @@ func TestRunsOnGoFileWrites(t *testing.T) {
 	defer th.TeardownFn()
 	_ = createAndWriteToFile("file.go", th.TestDir)
 	time.Sleep(wait)
-	equals(t, []string{th.TestDir}, th.Runner.Calls())
+	equals(t, 1, len(th.Runner.Calls()))
 }
 
 func TestSkipsNonGoFileWrites(t *testing.T) {
